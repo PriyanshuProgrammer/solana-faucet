@@ -1,103 +1,143 @@
+"use client";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import Image from "next/image";
+import SpinIcon from "../public/rotate-right-solid.svg";
+import styles from "./page.module.css";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  //state
+  const [amount, setAmount] = useState<string>("");
+  const [cluster, setCluster] = useState<string>("devnet");
+  const [address, setAddress] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [status, setStatus] = useState<string | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  //vars
+  const statusColor = {
+    success: "text-green-500",
+    failure: "text-red-500",
+  };
+
+  //actions
+  const onAirDrop = async () => {
+    setStatus(null);
+    if (!amount.trim() || !address.trim()) {
+      setStatus("Please enter amount and address");
+      return;
+    }
+    setLoading(true);
+    const response = await fetch("http://localhost:3000/api/airdrop", {
+      method: "POST",
+      body: JSON.stringify({
+        address,
+        amount,
+        cluster,
+      }),
+    });
+
+    const status = await (await response.json()).status;
+    setStatus(status);
+    setLoading(false);
+  };
+
+  return (
+    <div
+      className={`${styles.main_container} flex items-center justify-center p-10 w-screen h-screen bg-zinc-900`}
+    >
+      <div className="flex flex-col p-5 border-1 border-zinc-400 rounded-lg gap-4 w-[100%] md:w-auto">
+        <ClusterDropdown cluster={cluster} setCluster={setCluster} />
+        <h1 className="text-2xl font-bold text-white">Request Airdrop</h1>
+        <div className="flex items-center justify-center gap-2">
+          <Input
+            placeholder="Wallet Address"
+            onChange={(e) => {
+              setAddress(e.target.value);
+            }}
+            className="bg-transparent w-[100%] md:w-[20rem] text-white placeholder-white"
+          ></Input>
+          <AmountDropDown amount={amount} setAmount={setAmount} />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Button
+          disabled={loading}
+          onClick={onAirDrop}
+          className="bg-transparent border-1 border-zinc-400 hover:bg-zinc-700 text-white hover:cursor-pointer"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          {loading ? (
+            <Image
+              className={styles.rotating}
+              alt="spin"
+              style={{ width: "10px", height: "10px" }}
+              src={SpinIcon}
+            />
+          ) : (
+            "Send"
+          )}
+        </Button>
+        {status && (
+          <p
+            className={`text-center break-all w-[100%] md:w-[25rem] ${status === "success" ? statusColor.success : statusColor.failure}`}
+          >
+            {status}
+          </p>
+        )}
+      </div>
     </div>
+  );
+}
+
+function AmountDropDown({
+  amount,
+  setAmount,
+}: {
+  amount: string;
+  setAmount: (value: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline">{amount ? `${amount} SOL` : "Amount"}</Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-20">
+        <DropdownMenuRadioGroup value={amount} onValueChange={setAmount}>
+          <DropdownMenuRadioItem value="0.5">0.5</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="1">1</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="1.5">1.5</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="2">2</DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function ClusterDropdown({
+  cluster,
+  setCluster,
+}: {
+  cluster: string;
+  setCluster: (value: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button className="w-[fit-content] bg-transparent border-1 border-zinc-400">
+          {cluster}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-20">
+        <DropdownMenuRadioGroup value={cluster} onValueChange={setCluster}>
+          <DropdownMenuRadioItem value="devnet">devnet</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="testnet">testnet</DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
