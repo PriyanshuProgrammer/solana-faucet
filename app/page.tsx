@@ -35,7 +35,7 @@ export default function Home() {
       return;
     }
     setLoading(true);
-    const response = await fetch("http://localhost:3000/api/airdrop", {
+    const response = await fetch("/api/airdrop", {
       method: "POST",
       body: JSON.stringify({
         address,
@@ -55,7 +55,9 @@ export default function Home() {
     >
       <div className="flex flex-col p-5 border-1 border-zinc-400 rounded-lg gap-4 w-[100%] md:w-auto">
         <ClusterDropdown cluster={cluster} setCluster={setCluster} />
-        <h1 className="text-2xl font-bold text-white">Request Airdrop</h1>
+        <h1 className="text-2xl font-bold text-white">
+          Request Solana Airdrop
+        </h1>
         <div className="flex items-center justify-center gap-2">
           <Input
             placeholder="Wallet Address"
